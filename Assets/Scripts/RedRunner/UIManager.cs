@@ -12,7 +12,8 @@ namespace RedRunner
         START_SCREEN,
         END_SCREEN,
         PAUSE_SCREEN,
-        IN_GAME_SCREEN
+        IN_GAME_SCREEN,
+        LOGIN_SCREEN
     }
 
     public class UIManager : MonoBehaviour
@@ -183,6 +184,14 @@ namespace RedRunner
             CloseAllScreens();
             screen.UpdateScreenStatus(true);
             m_ActiveScreen = screen;
+        }
+
+        /// <summary>
+        /// Opens a screen as an overlay on top of the current active screen without closing it.
+        /// </summary>
+        public void OpenScreenOverlay(UIScreen screen)
+        {
+            screen.UpdateScreenStatus(true);
         }
 
         public void CloseScreen(UIScreen screen)

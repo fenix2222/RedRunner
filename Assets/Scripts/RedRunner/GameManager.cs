@@ -9,6 +9,7 @@ using BayatGames.SaveGameFree.Serializers;
 
 using RedRunner.Characters;
 using RedRunner.Collectables;
+using RedRunner.Networking;
 using RedRunner.TerrainGeneration;
 
 namespace RedRunner
@@ -80,6 +81,22 @@ namespace RedRunner
             get
             {
                 return m_AudioEnabled;
+            }
+        }
+
+        public float lastScore
+        {
+            get
+            {
+                return m_LastScore;
+            }
+        }
+
+        public float highScore
+        {
+            get
+            {
+                return m_HighScore;
             }
         }
         #endregion
@@ -154,6 +171,16 @@ namespace RedRunner
                 OnScoreChanged(m_Score, m_HighScore, m_LastScore);
             }
 
+            if (Web3AuthManager.Singleton != null && Web3AuthManager.Singleton.IsAuthenticated.Value
+                && ApiManager.Singleton != null)
+            {
+                ApiManager.Singleton.SubmitScore((int)m_Score, (success, msg) =>
+                {
+                    if (!success)
+                        Debug.LogWarning("[GameManager] Score submission failed: " + msg);
+                });
+            }
+
             yield return new WaitForSecondsRealtime(1.5f);
 
             EndGame();
@@ -192,9 +219,21 @@ namespace RedRunner
 
         IEnumerator Load()
         {
-            var startScreen = UIManager.Singleton.UISCREENS.Find(el => el.ScreenInfo == UIScreenInfo.START_SCREEN);
             yield return new WaitForSecondsRealtime(3f);
+
+            // Always open the StartScreen (menu) first as the background
+            var startScreen = UIManager.Singleton.GetUIScreen(UIScreenInfo.START_SCREEN);
             UIManager.Singleton.OpenScreen(startScreen);
+
+            // If not authenticated, overlay the LoginScreen on top of the menu
+            if (Web3AuthManager.Singleton == null || !Web3AuthManager.Singleton.IsAuthenticated.Value)
+            {
+                var loginScreen = UIManager.Singleton.GetUIScreen(UIScreenInfo.LOGIN_SCREEN);
+                if (loginScreen != null)
+                {
+                    UIManager.Singleton.OpenScreenOverlay(loginScreen);
+                }
+            }
         }
 
         void OnApplicationQuit()

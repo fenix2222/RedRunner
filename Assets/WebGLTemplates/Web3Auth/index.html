@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>{{{ PRODUCT_NAME }}}</title>
+    <style>
+        * { margin: 0; padding: 0; }
+        html, body { width: 100%; height: 100%; overflow: hidden; background: #1a0a1e; }
+        #unity-container { width: 100%; height: 100%; position: absolute; }
+        #unity-canvas { width: 100%; height: 100%; background: #1a0a1e; }
+        #unity-loading-bar {
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            width: 300px; text-align: center;
+        }
+        #unity-progress-bar-empty {
+            width: 100%; height: 18px; margin: 10px auto;
+            background: rgba(255,255,255,0.1); border-radius: 9px;
+        }
+        #unity-progress-bar-full {
+            width: 0%; height: 100%;
+            background: #38023b; border-radius: 9px;
+            transition: width 0.1s;
+        }
+        #unity-loading-text {
+            color: #ccc; font-family: Arial, sans-serif; font-size: 14px;
+        }
+    </style>
+
+    <!-- Web3Auth Dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@web3auth/ethereum-provider@9/dist/ethereumProvider.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@web3auth/modal@9/dist/modal.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@web3auth/default-evm-adapter@9/dist/defaultEvmAdapter.umd.min.js"></script>
+</head>
+<body>
+    <div id="unity-container">
+        <canvas id="unity-canvas" tabindex="-1"></canvas>
+        <div id="unity-loading-bar">
+            <div id="unity-loading-text">Loading...</div>
+            <div id="unity-progress-bar-empty">
+                <div id="unity-progress-bar-full"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="Build/{{{ LOADER_FILENAME }}}"></script>
+    <script>
+        var unityInstance = null;
+
+        var config = {
+            dataUrl: "Build/{{{ DATA_FILENAME }}}",
+            frameworkUrl: "Build/{{{ FRAMEWORK_FILENAME }}}",
+#if USE_THREADS
+            workerUrl: "Build/{{{ WORKER_FILENAME }}}",
+#endif
+#if USE_WASM
+            codeUrl: "Build/{{{ CODE_FILENAME }}}",
+#endif
+#if MEMORY_FILENAME
+            memoryUrl: "Build/{{{ MEMORY_FILENAME }}}",
+#endif
+#if SYMBOLS_FILENAME
+            symbolsUrl: "Build/{{{ SYMBOLS_FILENAME }}}",
+#endif
+            streamingAssetsUrl: "StreamingAssets",
+            companyName: "{{{ COMPANY_NAME }}}",
+            productName: "{{{ PRODUCT_NAME }}}",
+            productVersion: "{{{ PRODUCT_VERSION }}}",
+        };
+
+        var canvas = document.querySelector("#unity-canvas");
+        var loadingBar = document.querySelector("#unity-loading-bar");
+        var progressBarFull = document.querySelector("#unity-progress-bar-full");
+
+        createUnityInstance(canvas, config, function (progress) {
+            progressBarFull.style.width = (100 * progress) + "%";
+        }).then(function (instance) {
+            unityInstance = instance;
+            window.unityInstance = instance;
+            loadingBar.style.display = "none";
+            document.dispatchEvent(new Event('UnityReady'));
+        }).catch(function (message) {
+            alert(message);
+        });
+    </script>
+</body>
+</html>
