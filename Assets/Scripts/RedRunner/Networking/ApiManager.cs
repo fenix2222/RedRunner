@@ -97,6 +97,104 @@ namespace RedRunner.Networking
             }
         }
 
+        // --- Session endpoints (Xertra Play platform integration) ---
+
+        public void ValidatePlatformSession(PlatformSessionValidateRequest data, Action<bool, PlatformSessionValidateResponse> callback)
+        {
+            StartCoroutine(ValidatePlatformSessionCoroutine(data, callback));
+        }
+
+        private IEnumerator ValidatePlatformSessionCoroutine(PlatformSessionValidateRequest data, Action<bool, PlatformSessionValidateResponse> callback)
+        {
+            string json = JsonUtility.ToJson(data);
+
+            using (var request = new UnityWebRequest(ApiConfig.SessionValidate, "POST"))
+            {
+                request.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(json));
+                request.downloadHandler = new DownloadHandlerBuffer();
+                request.SetRequestHeader("Content-Type", "application/json");
+
+                yield return request.SendWebRequest();
+
+                if (request.result == UnityWebRequest.Result.Success)
+                {
+                    var response = JsonUtility.FromJson<PlatformSessionValidateResponse>(request.downloadHandler.text);
+                    callback(true, response);
+                }
+                else
+                {
+                    Debug.LogWarning("[ApiManager] ValidatePlatformSession failed: " + request.error);
+                    callback(false, null);
+                }
+            }
+        }
+
+        public void StartGameSession(GameStartRequest data, Action<bool, GameStartResponse> callback)
+        {
+            StartCoroutine(StartGameSessionCoroutine(data, callback));
+        }
+
+        private IEnumerator StartGameSessionCoroutine(GameStartRequest data, Action<bool, GameStartResponse> callback)
+        {
+            string json = JsonUtility.ToJson(data);
+
+            using (var request = new UnityWebRequest(ApiConfig.SessionStart, "POST"))
+            {
+                request.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(json));
+                request.downloadHandler = new DownloadHandlerBuffer();
+                request.SetRequestHeader("Content-Type", "application/json");
+                request.SetRequestHeader("Authorization", "Bearer " + GetJwt());
+
+                yield return request.SendWebRequest();
+
+                if (request.result == UnityWebRequest.Result.Success)
+                {
+                    var response = JsonUtility.FromJson<GameStartResponse>(request.downloadHandler.text);
+                    callback(true, response);
+                }
+                else
+                {
+                    Debug.LogWarning("[ApiManager] StartGameSession failed: " + request.error);
+                    var errorResponse = new GameStartResponse { success = false, error = request.error };
+                    callback(false, errorResponse);
+                }
+            }
+        }
+
+        public void CompleteGameSession(string sessionId, int score, Action<bool, GameCompleteResponse> callback)
+        {
+            StartCoroutine(CompleteGameSessionCoroutine(sessionId, score, callback));
+        }
+
+        private IEnumerator CompleteGameSessionCoroutine(string sessionId, int score, Action<bool, GameCompleteResponse> callback)
+        {
+            var data = new GameCompleteRequest { sessionId = sessionId, score = score };
+            string json = JsonUtility.ToJson(data);
+
+            using (var request = new UnityWebRequest(ApiConfig.SessionComplete, "POST"))
+            {
+                request.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(json));
+                request.downloadHandler = new DownloadHandlerBuffer();
+                request.SetRequestHeader("Content-Type", "application/json");
+                request.SetRequestHeader("Authorization", "Bearer " + GetJwt());
+
+                yield return request.SendWebRequest();
+
+                if (request.result == UnityWebRequest.Result.Success)
+                {
+                    var response = JsonUtility.FromJson<GameCompleteResponse>(request.downloadHandler.text);
+                    callback(true, response);
+                }
+                else
+                {
+                    Debug.LogWarning("[ApiManager] CompleteGameSession failed: " + request.error);
+                    callback(false, null);
+                }
+            }
+        }
+
+        // --- Leaderboard ---
+
         public void GetLeaderboard(Action<bool, LeaderboardEntry[]> callback)
         {
             StartCoroutine(GetLeaderboardCoroutine(callback));

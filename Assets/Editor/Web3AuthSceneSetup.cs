@@ -132,6 +132,19 @@ public class Web3AuthSceneSetup
             Debug.Log("[Web3Auth Setup] ApiManager already exists");
         }
 
+        // --- 6b. Create SessionManager GameObject ---
+        if (Object.FindFirstObjectByType<SessionManager>() == null)
+        {
+            var sessionManagerGO = new GameObject("SessionManager");
+            sessionManagerGO.AddComponent<SessionManager>();
+            Undo.RegisterCreatedObjectUndo(sessionManagerGO, "Create SessionManager");
+            Debug.Log("[Web3Auth Setup] Created SessionManager GameObject");
+        }
+        else
+        {
+            Debug.Log("[Web3Auth Setup] SessionManager already exists");
+        }
+
         // --- 7. Wire LoginScreen into UIManager's screen list ---
         WireLoginScreenToUIManager(uiManager);
 
@@ -437,6 +450,10 @@ public class Web3AuthSceneSetup
         var apiManager = Object.FindFirstObjectByType<ApiManager>();
         if (apiManager == null) { Debug.LogError("[Verify] ApiManager missing"); allGood = false; }
         else Debug.Log("[Verify] ApiManager: OK");
+
+        var sessionManager = Object.FindFirstObjectByType<SessionManager>();
+        if (sessionManager == null) { Debug.LogError("[Verify] SessionManager missing"); allGood = false; }
+        else Debug.Log("[Verify] SessionManager: OK");
 
         var loginScreen = Object.FindFirstObjectByType<LoginScreen>();
         if (loginScreen == null) { Debug.LogError("[Verify] LoginScreen missing"); allGood = false; }

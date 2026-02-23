@@ -25,6 +25,12 @@ namespace RedRunner.UI
         [SerializeField]
         protected Button LogoutButton = null;
 
+        [Header("Platform Mode")]
+        [SerializeField]
+        protected Text PlayModeText = null;
+        [SerializeField]
+        protected Text FreePlaysText = null;
+
         private void Start()
         {
             PlayButton.SetButtonAction(() =>
@@ -66,6 +72,10 @@ namespace RedRunner.UI
 
             if (!authenticated)
             {
+                // In platform mode, don't show login overlay — platform handles auth
+                if (SessionManager.Singleton != null && SessionManager.Singleton.CurrentMode == AuthMode.Platform)
+                    return;
+
                 // Show login overlay on top of the menu (same as initial app load)
                 var loginScreen = UIManager.Singleton.GetUIScreen(UIScreenInfo.LOGIN_SCREEN);
                 if (loginScreen != null && !loginScreen.IsOpen)
@@ -88,22 +98,73 @@ namespace RedRunner.UI
                 && Web3AuthManager.Singleton.IsAuthenticated.Value
                 && Web3AuthManager.Singleton.CurrentUser != null;
 
+            bool isPlatformMode = SessionManager.Singleton != null
+                && SessionManager.Singleton.CurrentMode == AuthMode.Platform;
+
             // Hide wallet address and logout button when not logged in
             if (WalletAddressText != null)
                 WalletAddressText.gameObject.SetActive(isLoggedIn);
+
+            // In platform mode, hide logout button (platform manages sessions)
             if (LogoutButton != null)
-                LogoutButton.gameObject.SetActive(isLoggedIn);
+                LogoutButton.gameObject.SetActive(isLoggedIn && !isPlatformMode);
+
             // Username not used for wallet logins — always hide
             if (UsernameText != null)
                 UsernameText.gameObject.SetActive(false);
 
-            if (!isLoggedIn)
+            // Platform mode: show display name from session instead of wallet address
+            if (isPlatformMode && isLoggedIn)
+            {
+                string displayName = SessionManager.Singleton.DisplayName;
+                if (WalletAddressText != null && !string.IsNullOrEmpty(displayName))
+                    WalletAddressText.text = displayName;
+                else if (WalletAddressText != null)
+                    WalletAddressText.text = Web3AuthManager.ShortenAddress(
+                        Web3AuthManager.Singleton.CurrentUser.walletAddress);
+            }
+            else if (isLoggedIn)
+            {
+                var user = Web3AuthManager.Singleton.CurrentUser;
+                if (WalletAddressText != null)
+                    WalletAddressText.text = Web3AuthManager.ShortenAddress(user.walletAddress);
+            }
+
+            // Play mode indicators
+            UpdatePlayModeInfo(isPlatformMode);
+        }
+
+        private void UpdatePlayModeInfo(bool isPlatformMode)
+        {
+            if (!isPlatformMode)
+            {
+                if (PlayModeText != null)
+                    PlayModeText.gameObject.SetActive(false);
+                if (FreePlaysText != null)
+                    FreePlaysText.gameObject.SetActive(false);
                 return;
+            }
 
-            var user = Web3AuthManager.Singleton.CurrentUser;
+            bool isFreePlay = SessionManager.Singleton.CurrentPlayType == PlayType.Free;
 
-            if (WalletAddressText != null)
-                WalletAddressText.text = Web3AuthManager.ShortenAddress(user.walletAddress);
+            if (PlayModeText != null)
+            {
+                PlayModeText.gameObject.SetActive(true);
+                PlayModeText.text = isFreePlay ? "Practice Mode" : "Ranked Mode";
+            }
+
+            if (FreePlaysText != null)
+            {
+                if (isFreePlay)
+                {
+                    FreePlaysText.gameObject.SetActive(true);
+                    FreePlaysText.text = "Free plays: " + SessionManager.Singleton.FreePlaysRemaining;
+                }
+                else
+                {
+                    FreePlaysText.gameObject.SetActive(false);
+                }
+            }
         }
     }
 }

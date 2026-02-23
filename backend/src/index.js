@@ -8,6 +8,7 @@ require('./db');
 const authRoutes = require('./routes/auth');
 const leaderboardRoutes = require('./routes/leaderboard');
 const userRoutes = require('./routes/user');
+const sessionRoutes = require('./routes/session');
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/session', sessionRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

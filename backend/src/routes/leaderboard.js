@@ -8,6 +8,7 @@ const getTopScores = db.prepare(`
   SELECT u.name, u.wallet_address, l.score, l.created_at
   FROM leaderboard l
   JOIN users u ON l.user_id = u.id
+  WHERE l.play_type = 'paid'
   ORDER BY l.score DESC
   LIMIT 100
 `);

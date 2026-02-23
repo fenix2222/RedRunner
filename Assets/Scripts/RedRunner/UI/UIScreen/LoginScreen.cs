@@ -26,6 +26,14 @@ namespace RedRunner.UI
 
         public override void UpdateScreenStatus(bool open)
         {
+            // In platform mode, never show login screen — session comes from parent
+            if (open && SessionManager.Singleton != null
+                && SessionManager.Singleton.CurrentMode == AuthMode.Platform)
+            {
+                IsOpen = false;
+                return;
+            }
+
             // Directly control visibility since programmatic animations may not work
             if (m_CanvasGroup != null)
             {

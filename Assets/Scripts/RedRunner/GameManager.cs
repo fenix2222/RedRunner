@@ -171,7 +171,27 @@ namespace RedRunner
                 OnScoreChanged(m_Score, m_HighScore, m_LastScore);
             }
 
+            // Submit score via session system
             if (Web3AuthManager.Singleton != null && Web3AuthManager.Singleton.IsAuthenticated.Value
+                && ApiManager.Singleton != null && SessionManager.Singleton != null
+                && !string.IsNullOrEmpty(SessionManager.Singleton.SessionId))
+            {
+                ApiManager.Singleton.CompleteGameSession(
+                    SessionManager.Singleton.SessionId,
+                    (int)m_Score,
+                    (success, response) =>
+                    {
+                        if (success && response != null)
+                            Debug.Log("[GameManager] Session completed. Leaderboard: " + response.leaderboardEligible);
+                        else
+                            Debug.LogWarning("[GameManager] Session completion failed");
+                    });
+
+                // Notify parent iframe
+                SessionManager.Singleton.NotifyGameEnded((int)m_Score);
+            }
+            // Fallback: direct score submission (standalone without session)
+            else if (Web3AuthManager.Singleton != null && Web3AuthManager.Singleton.IsAuthenticated.Value
                 && ApiManager.Singleton != null)
             {
                 ApiManager.Singleton.SubmitScore((int)m_Score, (success, msg) =>

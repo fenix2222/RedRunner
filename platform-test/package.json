@@ -1,0 +1,8 @@
+{
+  "name": "xertra-play-test",
+  "version": "1.0.0",
+  "description": "Test platform app for Xertra Play integration with Red Runner",
+  "scripts": {
+    "start": "npx serve -l 8082 -s"
+  }
+}

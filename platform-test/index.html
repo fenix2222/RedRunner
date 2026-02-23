@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xertra Play - Test Platform</title>
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Web3Auth Dependencies (same versions as the game) -->
+    <script src="https://cdn.jsdelivr.net/npm/@web3auth/ethereum-provider@9/dist/ethereumProvider.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@web3auth/modal@9/dist/modal.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@web3auth/default-evm-adapter@9/dist/defaultEvmAdapter.umd.min.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <h1>Xertra <span>Play</span></h1>
+        <div class="header-right" id="headerRight">
+            <span class="wallet-info" id="headerWallet"></span>
+            <button class="btn btn-secondary" id="logoutBtn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <!-- Login View -->
+    <div id="loginView" class="login-view">
+        <h2>Welcome to Xertra Play</h2>
+        <p>Connect your wallet to access games on the Xertra network. Play free or burn 1 STRAX for leaderboard-eligible games.</p>
+        <button class="btn btn-primary login-btn" onclick="login()">Connect Wallet</button>
+        <div id="loginStatus" class="tx-status"></div>
+    </div>
+
+    <!-- Dashboard View -->
+    <div id="dashboardView" class="hidden">
+        <div class="dashboard">
+            <div id="statusArea"></div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="label">Wallet</div>
+                    <div class="value" id="statWallet">—</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">STRAX Balance</div>
+                    <div class="value" id="statBalance">—</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Free Plays Left</div>
+                    <div class="value" id="statFreePlays">—</div>
+                </div>
+            </div>
+
+            <div class="game-card">
+                <h3>Red Runner</h3>
+                <p class="subtitle">2D platformer — run as far as you can!</p>
+
+                <div class="play-options">
+                    <button class="btn btn-secondary" id="freePlayBtn" onclick="startGame('free')">
+                        Play Free (Practice)
+                    </button>
+                    <button class="btn btn-primary" id="paidPlayBtn" onclick="startGame('paid')">
+                        Play for 1 STRAX (Ranked)
+                    </button>
+                </div>
+                <div id="gameStatus" class="tx-status"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game iframe container -->
+    <div id="gameContainer" class="game-container">
+        <iframe id="gameFrame" allow="autoplay"></iframe>
+    </div>
+
+    <!-- Game ended overlay -->
+    <div id="gameOverlay" class="game-overlay">
+        <h2>Game Over</h2>
+        <div class="score" id="overlayScore">0</div>
+        <div class="leaderboard-msg" id="overlayLeaderboard"></div>
+        <div style="display:flex; gap:12px;">
+            <button class="btn btn-primary" onclick="closeGameOverlay()">Back to Dashboard</button>
+        </div>
+    </div>
+
+    <!-- Display name modal -->
+    <div id="nameModal" class="modal-backdrop">
+        <div class="modal">
+            <h3>Choose a Display Name</h3>
+            <p>This name will be shown on the leaderboard.</p>
+            <input type="text" id="nameInput" placeholder="Enter display name" maxlength="20">
+            <button class="btn btn-primary" onclick="saveName()" style="width:100%">Continue</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

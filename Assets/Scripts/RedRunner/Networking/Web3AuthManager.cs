@@ -74,11 +74,10 @@ namespace RedRunner.Networking
 
         void Start()
         {
-#if UNITY_WEBGL && !UNITY_EDITOR
-            m_Initializing = true;
-            Web3Auth_Init(m_ClientId, m_ChainId, m_RpcTarget, m_BlockExplorerUrl,
-                m_ChainDisplayName, m_TickerName, gameObject.name);
-#elif UNITY_EDITOR
+            // WebGL init is now deferred to SessionManager.
+            // SessionManager detects platform vs standalone mode, then calls
+            // InitializeStandalone() if no platform session is received.
+#if UNITY_EDITOR
             if (m_SkipAuthInEditor)
             {
                 m_CurrentUser = new AuthData
@@ -91,6 +90,30 @@ namespace RedRunner.Networking
                 OnAuthStateChanged?.Invoke(true, m_CurrentUser);
             }
 #endif
+        }
+
+        /// <summary>
+        /// Called by SessionManager when no platform session is detected (standalone mode).
+        /// Initializes Web3Auth SDK in the browser.
+        /// </summary>
+        public void InitializeStandalone()
+        {
+#if UNITY_WEBGL && !UNITY_EDITOR
+            m_Initializing = true;
+            Web3Auth_Init(m_ClientId, m_ChainId, m_RpcTarget, m_BlockExplorerUrl,
+                m_ChainDisplayName, m_TickerName, gameObject.name);
+#endif
+        }
+
+        /// <summary>
+        /// Called by SessionManager in platform mode to inject auth state
+        /// without going through Web3Auth SDK.
+        /// </summary>
+        public void SetExternalSession(AuthData data)
+        {
+            m_CurrentUser = data;
+            IsAuthenticated.Value = true;
+            OnAuthStateChanged?.Invoke(true, m_CurrentUser);
         }
 
         public void Login()
