@@ -110,6 +110,13 @@ namespace RedRunner.Networking
 
             var sessionData = JsonUtility.FromJson<PlatformSessionData>(json);
 
+            // Override API base URL if provided by the portal
+            if (!string.IsNullOrEmpty(sessionData.apiBaseUrl))
+            {
+                Debug.Log("[SessionManager] Overriding ApiConfig.BaseUrl → " + sessionData.apiBaseUrl);
+                ApiConfig.BaseUrl = sessionData.apiBaseUrl;
+            }
+
             DisplayName = sessionData.displayName;
             BurnTxHash = sessionData.burnTxHash;
             CurrentPlayType = sessionData.playType == "paid" ? PlayType.Paid : PlayType.Free;

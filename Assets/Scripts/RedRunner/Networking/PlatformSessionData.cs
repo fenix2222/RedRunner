@@ -11,6 +11,8 @@ namespace RedRunner.Networking
         public string displayName;
         public string playType; // "free" or "paid"
         public string burnTxHash;
+        public string sessionId;     // Portal session ID
+        public string apiBaseUrl;    // Portal backend URL (overrides ApiConfig.BaseUrl)
     }
 
     [Serializable]
